@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../context/AuthContext'
 import { MOCK_MY_SCORES } from '../lib/mockData'
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 
 export function useMyScores() {
+  const { user } = useAuth()
   const [scores,  setScores]  = useState([])
   const [loading, setLoading] = useState(true)
   const [error,   setError]   = useState(null)
@@ -16,14 +18,22 @@ export function useMyScores() {
       return
     }
 
+    if (!user) {
+      setLoading(false)
+      return
+    }
+
     async function fetch() {
       setLoading(true)
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { setLoading(false); return }
-
       const { data, error } = await supabase
         .from('score_records')
-        .select(`id, played_at, total_score, hole_scores, golf_courses(name, hole_count)`)
+        .select(`
+          id,
+          played_at,
+          total_score,
+          hole_scores,
+          golf_courses ( name, hole_count )
+        `)
         .eq('user_id', user.id)
         .order('played_at', { ascending: false })
 
@@ -32,7 +42,7 @@ export function useMyScores() {
       setLoading(false)
     }
     fetch()
-  }, [])
+  }, [user])
 
   const stats = scores.length ? {
     rounds: scores.length,

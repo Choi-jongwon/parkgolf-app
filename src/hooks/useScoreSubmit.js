@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../context/AuthContext'
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 
 export function useScoreSubmit() {
+  const { user } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error,   setError]   = useState(null)
   const [success, setSuccess] = useState(false)
@@ -20,7 +22,6 @@ export function useScoreSubmit() {
       return true
     }
 
-    const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       setError('로그인이 필요합니다.')
       setLoading(false)
