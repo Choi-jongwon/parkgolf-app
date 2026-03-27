@@ -165,10 +165,10 @@ export default function HomePage() {
 
       {/* CTA */}
       <button
-        onClick={() => navigate('/score')}
+        onClick={() => navigate('/score', { state: { course: selectedCourse } })}
         className="w-full py-3.5 bg-green-600 hover:bg-green-700 active:scale-95 text-white font-bold rounded-2xl shadow-lg text-base transition-all"
       >
-        ✏️ 내 스코어 기록하기
+        ✏️ {selectedCourse ? `${selectedCourse.name} 스코어 기록하기` : '내 스코어 기록하기'}
       </button>
     </div>
   )

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useCourses } from '../hooks/useCourses'
 import { useScoreSubmit } from '../hooks/useScoreSubmit'
 
@@ -14,11 +14,15 @@ const SCORE_COLOR = {
 
 export default function ScoreInputPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { courses } = useCourses()
   const { submit, loading: submitting, error: submitError } = useScoreSubmit()
 
-  const [step,           setStep]   = useState(1)
-  const [selectedCourse, setCourse] = useState(null)
+  // 홈에서 선택한 골프장이 있으면 바로 Step 2로 시작
+  const preselectedCourse = location.state?.course ?? null
+
+  const [step,           setStep]   = useState(preselectedCourse ? 2 : 1)
+  const [selectedCourse, setCourse] = useState(preselectedCourse)
   const [date,           setDate]   = useState(
     new Date().toISOString().split('T')[0]
   )
@@ -68,7 +72,7 @@ export default function ScoreInputPage() {
           className="flex-1 py-3 border-2 border-green-600 text-green-700 font-bold rounded-xl">
           랭킹 보기
         </button>
-        <button onClick={() => { setStep(1); setScores(Array(36).fill(3)) }}
+        <button onClick={() => { setStep(1); setCourse(null); setScores(Array(36).fill(3)) }}
           className="flex-1 py-3 bg-green-600 text-white font-bold rounded-xl">
           다시 입력
         </button>
@@ -99,23 +103,23 @@ export default function ScoreInputPage() {
       {step === 1 && (
         <>
           <h2 className="text-xl font-bold text-gray-800">골프장 &amp; 날짜 선택</h2>
-          <div className="space-y-3">
+          <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
             {courses.map((c) => (
               <button key={c.id} onClick={() => setCourse(c)}
-                className={`w-full rounded-xl border-2 p-4 text-left transition-all
+                className={`w-full rounded-xl border-2 p-3 text-left transition-all
                   ${(selectedCourse?.id ?? courses[0]?.id) === c.id
                     ? 'border-green-500 bg-green-50'
                     : 'border-gray-200 bg-white hover:border-green-200'}`}>
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-gray-800">{c.name}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-semibold text-sm text-gray-800 truncate">{c.name}</span>
+                  <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full
                     ${(selectedCourse?.id ?? courses[0]?.id) === c.id
                       ? 'bg-green-600 text-white'
                       : 'bg-gray-100 text-gray-500'}`}>
-                    {c.hole_count}홀
+                    {c.city_province}
                   </span>
                 </div>
-                <p className="text-xs text-gray-400 mt-0.5">{c.address}</p>
+                <p className="text-xs text-gray-400 mt-0.5 truncate">{c.address}</p>
               </button>
             ))}
           </div>
@@ -136,8 +140,8 @@ export default function ScoreInputPage() {
         <>
           <div className="flex items-center justify-between">
             <button onClick={() => setStep(1)} className="text-gray-400 hover:text-gray-600 text-sm">← 이전</button>
-            <h2 className="text-lg font-bold text-gray-800">{course?.name}</h2>
-            <span className="text-sm text-gray-400">{date}</span>
+            <h2 className="text-lg font-bold text-gray-800 truncate mx-2">{course?.name}</h2>
+            <span className="text-sm text-gray-400 shrink-0">{date}</span>
           </div>
 
           {/* 총 타수 요약 */}
