@@ -20,7 +20,7 @@ export default function LoginPage() {
 
   /* ── 회원가입 필드 ── */
   const [nickname,  setNickname]  = useState('')
-  const [birthYear, setBirthYear] = useState('')
+  const [birthYear, setBirthYear] = useState('1960')
   const [gender,    setGender]    = useState('')
   const [email,     setEmail]     = useState('')
   const [password,  setPassword]  = useState('')
@@ -35,7 +35,7 @@ export default function LoginPage() {
   const [error,     setError]     = useState(null)
   const [done,      setDone]      = useState(false)
 
-  const birthYears = Array.from({ length: 1960 - 1929 }, (_, i) => 1960 - i)
+  const birthYears = Array.from({ length: 2026 - 1929 }, (_, i) => 2026 - i)  // 2026 ~ 1930
 
   /* 닉네임 중복 체크 (debounce 600ms) */
   useEffect(() => {
@@ -195,7 +195,6 @@ export default function LoginPage() {
                   <select value={birthYear} onChange={e => setBirthYear(e.target.value)}
                     className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm
                       focus:outline-none focus:border-green-400 bg-white">
-                    <option value="">-- 년도 선택 --</option>
                     {birthYears.map(y => (
                       <option key={y} value={y}>{y}년</option>
                     ))}
