@@ -91,6 +91,19 @@ function CalendarPicker({ value, onChange }) {
   )
 }
 
+/* ── 코스 유형 기준타수 생성 ── */
+const COURSE_TYPES = {
+  simple:   { label: '간단코스', par: 54, desc: '전 홀 파3', color: 'green' },
+  official: { label: '공인코스', par: 66, desc: '파3·파4 혼합', color: 'blue' },
+}
+
+function makePars(type, holeCount) {
+  if (type === 'simple') return Array(holeCount).fill(3)
+  // 공인코스: 파4 × (홀수×2/3) + 파3 × (홀수×1/3) ≈ 66/18홀
+  // 3홀 간격으로 파3 배치 (3,6,9,...), 나머지 파4
+  return Array.from({ length: holeCount }, (_, i) => ((i + 1) % 3 === 0 ? 3 : 4))
+}
+
 /* ── 메인 페이지 ── */
 export default function ScoreInputPage() {
   const navigate   = useNavigate()
@@ -104,16 +117,29 @@ export default function ScoreInputPage() {
   const [course, setCourse] = useState(preselected)
   const [date,   setDate]   = useState(new Date().toISOString().split('T')[0])
 
+  /* 코스 유형 */
+  const [courseType, setCourseType] = useState('simple')
+
   /* 총 타수 직접 입력 */
   const [totalDirect, setTotalDirect] = useState(null)   // null = 홀별 합산 사용
 
   /* 홀별 데이터 */
   const holeCount = course?.hole_count ?? 18
   const [scores, setScores] = useState(Array(36).fill(3))  // 실제 타수
-  const [pars,   setPars]   = useState(Array(36).fill(3))  // 기준 타수
+  const [pars,   setPars]   = useState(() => makePars('simple', 36))  // 기준 타수
 
   /* 홀별 섹션 펼침 여부 */
   const [showHoles, setShowHoles] = useState(false)
+
+  /* 코스 유형 변경 핸들러 */
+  function handleCourseType(type) {
+    setCourseType(type)
+    const newPars = makePars(type, 36)
+    setPars(newPars)
+    // 스코어를 기준타 기본값으로 초기화
+    setScores([...newPars])
+    setTotalDirect(null)
+  }
 
   /* 합산 */
   const holeTotal = scores.slice(0, holeCount).reduce((a, b) => a + b, 0)
@@ -151,7 +177,7 @@ export default function ScoreInputPage() {
       <div className="text-6xl">🎉</div>
       <h2 className="text-2xl font-bold text-gray-800">기록 완료!</h2>
       <div className="bg-green-50 rounded-2xl p-5 space-y-1">
-        <p className="text-gray-500 text-sm">{course?.name} · {date}</p>
+        <p className="text-gray-500 text-sm">{course?.name} · {date} · {COURSE_TYPES[courseType].label}</p>
         <p className="text-4xl font-extrabold text-green-600">{total}타</p>
         <p className={`text-lg font-semibold ${diff <= 0 ? 'text-blue-500' : 'text-red-500'}`}>
           PAR {parTotal} 대비 {diff === 0 ? '이븐' : diff > 0 ? `+${diff}` : diff}
@@ -231,6 +257,44 @@ export default function ScoreInputPage() {
             <span className="text-xs text-gray-400 shrink-0">{course?.hole_count}홀</span>
           </div>
 
+          {/* 🏌️ 코스 유형 선택 */}
+          <div>
+            <label className="text-sm font-bold text-gray-600 mb-2 block">🏌️ 코스 유형</label>
+            <div className="grid grid-cols-2 gap-3">
+              {Object.entries(COURSE_TYPES).map(([key, ct]) => (
+                <button key={key} onClick={() => handleCourseType(key)}
+                  className={`rounded-2xl border-2 p-4 text-left transition-all active:scale-95
+                    ${courseType === key
+                      ? key === 'simple'
+                        ? 'border-green-500 bg-green-50'
+                        : 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 bg-white hover:border-gray-300'}`}>
+                  <div className={`text-lg font-extrabold mb-0.5
+                    ${courseType === key
+                      ? key === 'simple' ? 'text-green-600' : 'text-blue-600'
+                      : 'text-gray-700'}`}>
+                    {ct.par}타
+                  </div>
+                  <div className={`text-sm font-bold
+                    ${courseType === key
+                      ? key === 'simple' ? 'text-green-700' : 'text-blue-700'
+                      : 'text-gray-600'}`}>
+                    {ct.label}
+                  </div>
+                  <div className="text-xs text-gray-400 mt-0.5">{ct.desc}</div>
+                  {courseType === key && (
+                    <div className={`mt-2 text-xs font-semibold px-2 py-0.5 rounded-full inline-block
+                      ${key === 'simple'
+                        ? 'bg-green-600 text-white'
+                        : 'bg-blue-600 text-white'}`}>
+                      ✓ 선택됨
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* 📅 달력 날짜 선택 */}
           <div>
             <label className="text-sm font-bold text-gray-600 mb-2 block">📅 경기 날짜</label>
@@ -257,14 +321,14 @@ export default function ScoreInputPage() {
                   ＋
                 </button>
               </div>
-              {showHoles && (
-                <div className="mt-3 pt-3 border-t border-white/20 flex justify-between text-sm">
-                  <span className="text-green-100">기준 타수 합계</span>
-                  <span className={`font-bold ${diff === 0 ? 'text-yellow-300' : diff < 0 ? 'text-blue-200' : 'text-red-200'}`}>
-                    PAR {parTotal}  {diff === 0 ? '(이븐)' : diff > 0 ? `(+${diff})` : `(${diff})`}
-                  </span>
-                </div>
-              )}
+              <div className="mt-3 pt-3 border-t border-white/20 flex justify-between text-sm">
+                <span className="text-green-100">
+                  {COURSE_TYPES[courseType].label} · PAR {parTotal}
+                </span>
+                <span className={`font-bold ${diff === 0 ? 'text-yellow-300' : diff < 0 ? 'text-blue-200' : 'text-red-200'}`}>
+                  {diff === 0 ? '이븐' : diff > 0 ? `+${diff}` : `${diff}`}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -340,7 +404,7 @@ export default function ScoreInputPage() {
           <button onClick={handleSave} disabled={submitting}
             className="w-full py-4 bg-green-600 hover:bg-green-700 disabled:opacity-60
               text-white font-bold rounded-2xl text-base active:scale-95 transition-all sticky bottom-4 shadow-xl">
-            {submitting ? '저장 중...' : `✅ ${total}타 저장하기`}
+            {submitting ? '저장 중...' : `✅ ${COURSE_TYPES[courseType].label} ${total}타 저장하기`}
           </button>
         </>
       )}
