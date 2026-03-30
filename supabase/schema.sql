@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS public.users (
   id         UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email      TEXT NOT NULL,
   nickname   TEXT NOT NULL,
+  birth_year SMALLINT,                              -- 출생년도
+  gender     TEXT CHECK (gender IN ('male','female')),  -- 성별
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -62,11 +64,13 @@ GRANT SELECT ON public.ranking_by_course TO anon, authenticated;
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.users (id, email, nickname)
+  INSERT INTO public.users (id, email, nickname, birth_year, gender)
   VALUES (
     NEW.id,
     NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'nickname', split_part(NEW.email, '@', 1))
+    COALESCE(NEW.raw_user_meta_data->>'nickname', split_part(NEW.email, '@', 1)),
+    NULLIF(NEW.raw_user_meta_data->>'birth_year', '')::SMALLINT,
+    NULLIF(NEW.raw_user_meta_data->>'gender', '')
   )
   ON CONFLICT (id) DO NOTHING;
   RETURN NEW;

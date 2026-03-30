@@ -9,14 +9,19 @@ export default function LoginPage() {
 
   const from = location.state?.from?.pathname ?? '/'
 
-  const [tab,      setTab]      = useState('login')   // 'login' | 'signup'
-  const [email,    setEmail]    = useState('')
-  const [password, setPassword] = useState('')
-  const [confirm,  setConfirm]  = useState('')
-  const [nickname, setNickname] = useState('')
-  const [loading,  setLoading]  = useState(false)
-  const [error,    setError]    = useState(null)
-  const [done,     setDone]     = useState(false)    // 회원가입 완료 메시지
+  const [tab,       setTab]       = useState('login')   // 'login' | 'signup'
+  const [email,     setEmail]     = useState('')
+  const [password,  setPassword]  = useState('')
+  const [confirm,   setConfirm]   = useState('')
+  const [nickname,  setNickname]  = useState('')
+  const [birthYear, setBirthYear] = useState('')
+  const [gender,    setGender]    = useState('')      // 'male' | 'female'
+  const [loading,   setLoading]   = useState(false)
+  const [error,     setError]     = useState(null)
+  const [done,      setDone]      = useState(false)   // 회원가입 완료 메시지
+
+  const currentYear = new Date().getFullYear()
+  const birthYears  = Array.from({ length: currentYear - 1929 }, (_, i) => currentYear - i)
 
   async function handleLogin(e) {
     e.preventDefault()
@@ -37,12 +42,14 @@ export default function LoginPage() {
   async function handleSignup(e) {
     e.preventDefault()
     setError(null)
-    if (password !== confirm) { setError('비밀번호가 일치하지 않습니다.'); return }
-    if (password.length < 6)  { setError('비밀번호는 6자 이상이어야 합니다.'); return }
     if (!nickname.trim())     { setError('닉네임을 입력해 주세요.'); return }
+    if (!birthYear)           { setError('출생년도를 선택해 주세요.'); return }
+    if (!gender)              { setError('성별을 선택해 주세요.'); return }
+    if (password.length < 6)  { setError('비밀번호는 6자 이상이어야 합니다.'); return }
+    if (password !== confirm)  { setError('비밀번호가 일치하지 않습니다.'); return }
     setLoading(true)
     try {
-      await signUp(email, password, nickname.trim())
+      await signUp(email, password, nickname.trim(), Number(birthYear), gender)
       setDone(true)
     } catch (err) {
       setError(err.message)
@@ -89,15 +96,47 @@ export default function LoginPage() {
           <form onSubmit={tab === 'login' ? handleLogin : handleSignup}
             className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
 
-            {/* 닉네임 (회원가입만) */}
+            {/* 회원가입 전용 필드 */}
             {tab === 'signup' && (
-              <div>
-                <label className="text-sm font-semibold text-gray-600 block mb-1.5">닉네임</label>
-                <input type="text" value={nickname} onChange={e => setNickname(e.target.value)}
-                  placeholder="랭킹에 표시될 이름"
-                  className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-400"
-                  required />
-              </div>
+              <>
+                {/* 닉네임 */}
+                <div>
+                  <label className="text-sm font-semibold text-gray-600 block mb-1.5">닉네임</label>
+                  <input type="text" value={nickname} onChange={e => setNickname(e.target.value)}
+                    placeholder="랭킹에 표시될 이름"
+                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-400"
+                    required />
+                </div>
+
+                {/* 출생년도 */}
+                <div>
+                  <label className="text-sm font-semibold text-gray-600 block mb-1.5">출생년도</label>
+                  <select value={birthYear} onChange={e => setBirthYear(e.target.value)}
+                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-400 bg-white">
+                    <option value="">-- 년도 선택 --</option>
+                    {birthYears.map(y => (
+                      <option key={y} value={y}>{y}년</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* 성별 */}
+                <div>
+                  <label className="text-sm font-semibold text-gray-600 block mb-1.5">성별</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[['male', '👨 남성'], ['female', '👩 여성']].map(([val, label]) => (
+                      <button key={val} type="button"
+                        onClick={() => setGender(val)}
+                        className={`py-3 rounded-xl border-2 text-sm font-bold transition-all
+                          ${gender === val
+                            ? 'border-green-500 bg-green-50 text-green-700'
+                            : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'}`}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
             )}
 
             {/* 이메일 */}
