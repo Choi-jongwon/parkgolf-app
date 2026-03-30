@@ -7,6 +7,8 @@ import HomePage from './pages/HomePage'
 import ScoreInputPage from './pages/ScoreInputPage'
 import MyScoresPage from './pages/MyScoresPage'
 import LoginPage from './pages/LoginPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 
 export default function App() {
   return (
@@ -16,7 +18,9 @@ export default function App() {
         <main className="pb-20 sm:pb-10">
           <Routes>
             <Route path="/"      element={<HomePage />} />
-            <Route path="/login" element={<LoginPage />} />
+            <Route path="/login"            element={<LoginPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password"  element={<ResetPasswordPage />} />
             <Route path="/score" element={
               <ProtectedRoute><ScoreInputPage /></ProtectedRoute>
             } />

@@ -269,6 +269,14 @@ export default function LoginPage() {
                 text-white font-bold rounded-xl text-base transition-all active:scale-95">
               {loading ? '처리 중...' : tab === 'login' ? '로그인' : '회원가입'}
             </button>
+
+            {/* 비밀번호 찾기 (로그인 탭만) */}
+            {tab === 'login' && (
+              <button type="button" onClick={() => navigate('/forgot-password')}
+                className="w-full text-center text-sm text-gray-400 hover:text-green-600 transition-colors">
+                비밀번호를 잊으셨나요?
+              </button>
+            )}
           </form>
         )}
 
