@@ -35,8 +35,7 @@ export default function LoginPage() {
   const [error,     setError]     = useState(null)
   const [done,      setDone]      = useState(false)
 
-  const currentYear = new Date().getFullYear()
-  const birthYears  = Array.from({ length: currentYear - 1929 }, (_, i) => currentYear - i)
+  const birthYears = Array.from({ length: 1960 - 1929 }, (_, i) => 1960 - i)
 
   /* 닉네임 중복 체크 (debounce 600ms) */
   useEffect(() => {
