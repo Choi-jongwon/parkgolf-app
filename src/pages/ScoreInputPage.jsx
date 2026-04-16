@@ -92,9 +92,11 @@ function CalendarPicker({ value, onChange }) {
 }
 
 /* ── 코스 유형 기준타수 생성 ── */
+const HOLE_COUNT = 18  // 항상 18홀 기준
+
 const COURSE_TYPES = {
-  simple:   { label: '간단코스', par: 54, desc: '전 홀 파3', color: 'green' },
-  official: { label: '공인코스', par: 66, desc: '파3·파4 혼합', color: 'blue' },
+  simple:   { label: '간단코스', par: 54, desc: '전 홀 파3 · 18홀', color: 'green' },
+  official: { label: '대회코스', par: 66, desc: '파3·파4 혼합 · 18홀', color: 'blue' },
 }
 
 function makePars(type, holeCount) {
@@ -124,7 +126,7 @@ export default function ScoreInputPage() {
   const [totalDirect, setTotalDirect] = useState(null)   // null = 홀별 합산 사용
 
   /* 홀별 데이터 */
-  const holeCount = course?.hole_count ?? 18
+  const holeCount = HOLE_COUNT
   const [scores, setScores] = useState(Array(36).fill(3))  // 실제 타수
   const [pars,   setPars]   = useState(() => makePars('simple', 36))  // 기준 타수
 
@@ -254,7 +256,7 @@ export default function ScoreInputPage() {
             <button onClick={() => setStep(1)}
               className="text-gray-400 hover:text-gray-600 text-sm font-medium">← 이전</button>
             <h2 className="text-base font-bold text-gray-800 truncate mx-2">{course?.name}</h2>
-            <span className="text-xs text-gray-400 shrink-0">{course?.hole_count}홀</span>
+            <span className="text-xs text-gray-400 shrink-0">18홀</span>
           </div>
 
           {/* 🏌️ 코스 유형 선택 */}
