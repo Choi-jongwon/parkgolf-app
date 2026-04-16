@@ -25,7 +25,7 @@ export default function Navbar() {
         {/* 로고 */}
         <button onClick={() => navigate('/')}
           className="flex items-center gap-2 font-bold text-green-700 text-lg">
-          ⛳ 파크골프
+          ⛳ 내파스
         </button>
 
         {/* PC 메뉴 */}

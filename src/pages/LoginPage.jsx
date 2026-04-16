@@ -118,8 +118,8 @@ export default function LoginPage() {
         {/* 로고 */}
         <div className="text-center">
           <div className="text-4xl mb-2">⛳</div>
-          <h1 className="text-2xl font-extrabold text-green-700">파크골프</h1>
-          <p className="text-sm text-gray-400 mt-1">스코어 기록 &amp; 랭킹</p>
+          <h1 className="text-2xl font-extrabold text-green-700">내파스</h1>
+          <p className="text-sm text-gray-400 mt-1">내 파크골프 스코어</p>
         </div>
 
         {/* 탭 */}
