@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import Navbar from './components/Navbar'
 import BottomTabBar from './components/BottomTabBar'
+import Footer from './components/Footer'
 import ProtectedRoute from './components/ProtectedRoute'
 import HomePage from './pages/HomePage'
 import ScoreInputPage from './pages/ScoreInputPage'
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="*"      element={<Navigate to="/" replace />} />
           </Routes>
         </main>
+        <Footer />
         <BottomTabBar />
       </div>
     </AuthProvider>
