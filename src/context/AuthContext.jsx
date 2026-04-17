@@ -44,16 +44,25 @@ export function AuthProvider({ children }) {
   // 닉네임 + 비밀번호 로그인
   async function signInWithNickname(nickname, password) {
     if (USE_MOCK) return { user: MOCK_USER }
-    // 닉네임으로 이메일 조회
-    const { data: userRow } = await supabase
+
+    // 1. 닉네임으로 이메일 조회
+    const { data: userRow, error: lookupErr } = await supabase
       .from('users')
       .select('email')
       .eq('nickname', nickname.trim())
       .maybeSingle()
-    if (!userRow) throw new Error('닉네임 또는 비밀번호가 올바르지 않습니다.')
-    // 이메일로 로그인
+
+    if (lookupErr) throw new Error('사용자 조회 중 오류가 발생했습니다.')
+    if (!userRow) throw new Error('등록되지 않은 닉네임입니다.')
+
+    // 2. 이메일로 로그인
     const { data, error } = await supabase.auth.signInWithPassword({ email: userRow.email, password })
-    if (error) throw new Error('닉네임 또는 비밀번호가 올바르지 않습니다.')
+    if (error) {
+      if (error.message?.toLowerCase().includes('email not confirmed')) {
+        throw new Error('이메일 인증이 필요합니다. Supabase 대시보드 → Authentication → Settings에서 "Enable email confirmations"를 OFF로 설정해 주세요.')
+      }
+      throw new Error('비밀번호가 올바르지 않습니다.')
+    }
     return data
   }
 

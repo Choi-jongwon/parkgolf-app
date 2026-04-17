@@ -85,8 +85,14 @@ export default function LoginPage() {
     if (password !== confirm)   { setError('비밀번호가 일치하지 않습니다.'); return }
     setLoading(true)
     try {
-      await signUp(email, password, nickname.trim(), Number(birthYear), gender)
-      setDone(true)
+      const result = await signUp(email, password, nickname.trim(), Number(birthYear), gender)
+      // 이메일 인증 OFF 설정 시: session이 즉시 발급 → 바로 홈으로 이동
+      if (result?.session) {
+        navigate(from, { replace: true })
+      } else {
+        // 이메일 인증 ON 설정 시: 인증 완료 후 로그인 필요
+        setDone(true)
+      }
     } catch (err) {
       setError(err.message)
     } finally {
@@ -138,7 +144,10 @@ export default function LoginPage() {
           <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center space-y-3">
             <div className="text-4xl">🎉</div>
             <p className="font-bold text-green-800 text-lg">회원가입 완료!</p>
-            <p className="text-sm text-green-600">닉네임과 비밀번호로 로그인해 주세요.</p>
+            <p className="text-sm text-green-600">
+              가입하신 이메일로 인증 메일이 발송되었습니다.<br />
+              이메일 인증 후 로그인해 주세요.
+            </p>
             <button onClick={() => { switchTab('login'); setLoginNick(nickname) }}
               className="w-full mt-2 py-3 bg-green-600 text-white font-bold rounded-xl text-sm">
               로그인 하기 →
