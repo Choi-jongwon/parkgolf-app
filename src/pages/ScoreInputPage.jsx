@@ -115,8 +115,9 @@ export default function ScoreInputPage() {
 
   const preselected = location.state?.course ?? null
 
-  const [step,   setStep]   = useState(preselected ? 2 : 1)
-  const [course, setCourse] = useState(preselected)
+  const [step,        setStep]        = useState(preselected ? 2 : 1)
+  const [course,      setCourse]      = useState(preselected)
+  const [searchQuery, setSearchQuery] = useState('')
   const [date,   setDate]   = useState(new Date().toISOString().split('T')[0])
 
   /* 코스 유형 */
@@ -222,28 +223,79 @@ export default function ScoreInputPage() {
       {step === 1 && (
         <>
           <h2 className="text-xl font-bold text-gray-800">골프장 선택</h2>
-          <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
-            {courses.map((c) => (
-              <button key={c.id} onClick={() => setCourse(c)}
-                className={`w-full rounded-xl border-2 p-3 text-left transition-all
-                  ${course?.id === c.id
-                    ? 'border-green-500 bg-green-50'
-                    : 'border-gray-200 bg-white hover:border-green-200'}`}>
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-semibold text-sm text-gray-800 truncate">{c.name}</span>
-                  <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full
-                    ${course?.id === c.id ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-500'}`}>
-                    {c.city_province}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-400 mt-0.5 truncate">{c.address}</p>
+
+          {/* 검색 */}
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+            <input
+              type="text"
+              placeholder="골프장 이름 또는 지역 검색..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-9 py-3 border-2 border-gray-200 rounded-xl text-sm
+                focus:outline-none focus:border-green-400 bg-white"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 text-xl leading-none">
+                ×
               </button>
-            ))}
+            )}
           </div>
+
+          {/* 골프장 목록 */}
+          {(() => {
+            const q = searchQuery.trim().toLowerCase()
+            const filtered = q
+              ? courses.filter(c =>
+                  c.name.toLowerCase().includes(q) ||
+                  (c.city_province ?? '').toLowerCase().includes(q) ||
+                  (c.address ?? '').toLowerCase().includes(q)
+                )
+              : courses
+            return (
+              <>
+                {q && (
+                  <p className="text-xs text-gray-400 -mb-1">
+                    검색 결과 <span className="font-semibold text-gray-600">{filtered.length}</span>개
+                  </p>
+                )}
+                <div className="space-y-2 max-h-[55vh] overflow-y-auto pr-1">
+                  {filtered.length === 0 ? (
+                    <div className="py-10 text-center text-gray-400 text-sm">
+                      <p className="text-2xl mb-2">🔍</p>
+                      검색 결과가 없습니다.
+                    </div>
+                  ) : (
+                    filtered.map((c) => (
+                      <button key={c.id} onClick={() => setCourse(c)}
+                        className={`w-full rounded-xl border-2 p-3 text-left transition-all
+                          ${course?.id === c.id
+                            ? 'border-green-500 bg-green-50'
+                            : 'border-gray-200 bg-white hover:border-green-200'}`}>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-semibold text-sm text-gray-800 truncate">{c.name}</span>
+                          <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full
+                            ${course?.id === c.id ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                            {c.city_province}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-0.5 truncate">{c.address}</p>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </>
+            )
+          })()}
+
           <button
             onClick={() => { if (course ?? courses[0]) { setCourse(c => c ?? courses[0]); setStep(2) } }}
-            className="w-full py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-2xl text-base active:scale-95 transition-all">
-            다음 → 스코어 입력
+            disabled={!course}
+            className="w-full py-4 bg-green-600 hover:bg-green-700 disabled:opacity-40
+              text-white font-bold rounded-2xl text-base active:scale-95 transition-all">
+            {course ? `${course.name} 선택 → 스코어 입력` : '골프장을 선택해 주세요'}
           </button>
         </>
       )}
