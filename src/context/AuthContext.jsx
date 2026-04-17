@@ -11,8 +11,9 @@ const MOCK_USER = {
 }
 
 export function AuthProvider({ children }) {
-  const [user,    setUser]    = useState(USE_MOCK ? MOCK_USER : null)
-  const [loading, setLoading] = useState(!USE_MOCK)
+  const [user,              setUser]              = useState(USE_MOCK ? MOCK_USER : null)
+  const [loading,           setLoading]           = useState(!USE_MOCK)
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false)
 
   useEffect(() => {
     if (USE_MOCK) return
@@ -29,6 +30,8 @@ export function AuthProvider({ children }) {
       })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      // PASSWORD_RECOVERY 이벤트를 전역에서 캡처 (ResetPasswordPage가 아직 안 떠 있어도 OK)
+      if (_event === 'PASSWORD_RECOVERY') setIsPasswordRecovery(true)
       setUser(session?.user ?? null)
     })
 
@@ -84,7 +87,7 @@ export function AuthProvider({ children }) {
   const nickname = user?.user_metadata?.nickname ?? user?.email?.split('@')[0] ?? ''
 
   return (
-    <AuthContext.Provider value={{ user, nickname, loading, signIn, signInWithNickname, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, nickname, loading, isPasswordRecovery, setIsPasswordRecovery, signIn, signInWithNickname, signUp, signOut }}>
       {!loading && children}
     </AuthContext.Provider>
   )

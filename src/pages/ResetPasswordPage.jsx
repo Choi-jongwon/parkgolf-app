@@ -1,23 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../context/AuthContext'
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate()
+  // AuthProvider에서 전역으로 캡처한 PASSWORD_RECOVERY 상태 사용
+  const { isPasswordRecovery: ready, setIsPasswordRecovery } = useAuth()
 
   const [password,  setPassword]  = useState('')
   const [confirm,   setConfirm]   = useState('')
   const [loading,   setLoading]   = useState(false)
   const [error,     setError]     = useState(null)
   const [done,      setDone]      = useState(false)
-  const [ready,     setReady]     = useState(false)   // 세션 준비 여부
-
-  // Supabase가 URL hash의 access_token을 감지해 세션을 자동 설정
-  useEffect(() => {
-    supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') setReady(true)
-    })
-  }, [])
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -28,6 +23,7 @@ export default function ResetPasswordPage() {
     try {
       const { error: updateError } = await supabase.auth.updateUser({ password })
       if (updateError) throw updateError
+      setIsPasswordRecovery(false)   // 복구 상태 초기화
       setDone(true)
     } catch (err) {
       setError(err.message)
